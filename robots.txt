@@ -1,3 +1,3 @@
 User-agent: *
 Allow: /
-Sitemap: https://www.dreamfrontier.net/sitemap.xml
+Sitemap: https://dreamfrontier.net/sitemap.xml
