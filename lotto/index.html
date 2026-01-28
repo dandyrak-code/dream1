@@ -1,50 +1,262 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>로또 번호 추천기</title>
-    <style>
-        body { font-family: Arial; text-align: center; margin-top: 50px; }
-        input, button { padding: 12px 18px; font-size: 18px; margin: 10px; }
-        #numbers { margin-top: 30px; font-size: 22px; font-weight: bold; white-space: pre-line; }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>로또 번호 추천기</title>
+  <style>
+    :root{
+      --bg: #f5f7fb;
+      --card: #ffffff;
+      --text: #111827;
+      --muted: #6b7280;
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --border: #e5e7eb;
+      --shadow: 0 12px 30px rgba(0,0,0,0.10);
+      --shadow-soft: 0 8px 20px rgba(0,0,0,0.08);
+      --radius: 18px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body{
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: radial-gradient(1200px 600px at 50% -200px, rgba(37,99,235,0.18), transparent 60%),
+                  var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .container{
+      width: 100%;
+      max-width: 680px;
+    }
+
+    .card{
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 28px 22px;
+      text-align: center;
+    }
+
+    h1{
+      margin: 0 0 6px 0;
+      font-size: 30px;
+      letter-spacing: -0.3px;
+    }
+
+    .subtitle{
+      margin: 0 0 18px 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .controls{
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;
+      margin: 18px 0 12px;
+    }
+
+    label{
+      font-size: 15px;
+      color: var(--muted);
+    }
+
+    input[type="number"]{
+      width: 140px;
+      padding: 12px 14px;
+      font-size: 16px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      background: #fff;
+    }
+
+    input[type="number"]:focus{
+      border-color: rgba(37,99,235,0.7);
+      box-shadow: 0 0 0 4px rgba(37,99,235,0.12);
+    }
+
+    button{
+      padding: 12px 18px;
+      font-size: 16px;
+      border: 0;
+      border-radius: 12px;
+      cursor: pointer;
+      background: var(--primary);
+      color: white;
+      box-shadow: var(--shadow-soft);
+      transition: transform 0.12s ease, background 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    /* 2) 버튼 hover 효과 */
+    button:hover{
+      background: var(--primary-hover);
+      transform: translateY(-1px);
+      box-shadow: 0 10px 22px rgba(37,99,235,0.25);
+    }
+
+    button:active{
+      transform: translateY(0px);
+      box-shadow: 0 6px 14px rgba(37,99,235,0.22);
+    }
+
+    .results{
+      margin-top: 18px;
+      text-align: left;
+    }
+
+    .result-item{
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px 14px;
+      margin: 10px 0;
+      background: #fbfcff;
+    }
+
+    .result-title{
+      font-weight: 700;
+      margin-bottom: 10px;
+      font-size: 15px;
+    }
+
+    /* 3) 결과 숫자를 동그라미 배지로 표시 */
+    .badges{
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .badge{
+      width: 42px;
+      height: 42px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 15px;
+      border: 1px solid var(--border);
+      background: #fff;
+      box-shadow: 0 6px 14px rgba(0,0,0,0.08);
+      user-select: none;
+    }
+
+    .footer{
+      margin-top: 14px;
+      font-size: 14px;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .footer a{
+      color: var(--muted);
+      text-decoration: none;
+      padding: 6px 8px;
+      border-radius: 10px;
+      transition: background 0.2s, color 0.2s;
+    }
+
+    .footer a:hover{
+      background: rgba(37,99,235,0.08);
+      color: var(--primary-hover);
+    }
+
+    .divider{
+      height: 1px;
+      background: var(--border);
+      margin: 18px 0 12px;
+      border: 0;
+    }
+
+    @media (max-width: 420px){
+      h1{ font-size: 26px; }
+      input[type="number"]{ width: 120px; }
+      .badge{ width: 40px; height: 40px; }
+    }
+  </style>
 </head>
 
 <body>
-    <h1>🎰 로또 번호 추천기</h1>
-    <label>추천 개수 (최대 10개): </label>
-    <input type="number" id="count" min="1" max="10" value="1">
-    <button onclick="generate()">번호 추천 받기</button>
-    <div id="numbers"></div>
+  <div class="container">
+    <!-- 1) 카드 박스 + 그림자 -->
+    <div class="card">
+      <h1>🎰 로또 번호 추천기</h1>
+      <p class="subtitle">원하는 개수만큼 랜덤 조합을 추천해드립니다. (참고용)</p>
 
-    <script>
-        function generate() {
-            let count = parseInt(document.getElementById("count").value);
-            if (isNaN(count) || count < 1 || count > 10) {
-                alert("추천 개수는 1~10 사이로 입력해주세요.");
-                return;
-            }
+      <div class="controls">
+        <label for="count">추천 개수 (최대 10개):</label>
+        <input type="number" id="count" min="1" max="10" value="1" />
+        <button onclick="generate()">번호 추천 받기</button>
+      </div>
 
-            let output = "";
-            for (let i = 0; i < count; i++) {
-                let nums = [];
-                while (nums.length < 6) {
-                    let n = Math.floor(Math.random() * 45) + 1;
-                    if (!nums.includes(n)) nums.push(n);
-                }
-                nums.sort((a,b)=>a-b);
-                output += `추천 ${i+1}: ${nums.join(", ")}\n`;
-            }
-            document.getElementById("numbers").innerText = output;
+      <div id="results" class="results" aria-live="polite"></div>
+
+      <hr class="divider">
+
+      <p class="footer">
+        <a href="about.html">사이트 소개</a> |
+        <a href="privacy.html">개인정보처리방침</a> |
+        <a href="contact.html">문의하기</a>
+      </p>
+    </div>
+  </div>
+
+  <script>
+    function generate() {
+      const count = parseInt(document.getElementById("count").value, 10);
+      const resultsEl = document.getElementById("results");
+
+      if (isNaN(count) || count < 1 || count > 10) {
+        alert("추천 개수는 1~10 사이로 입력해주세요.");
+        return;
+      }
+
+      resultsEl.innerHTML = "";
+
+      for (let i = 0; i < count; i++) {
+        const nums = [];
+        while (nums.length < 6) {
+          const n = Math.floor(Math.random() * 45) + 1;
+          if (!nums.includes(n)) nums.push(n);
         }
-    </script>
-<hr>
-<p style="font-size:14px;">
-    <a href="about.html">사이트 소개</a> |
-    <a href="privacy.html">개인정보처리방침</a> |
-    <a href="contact.html">문의하기</a>
-</p>
-    
+        nums.sort((a, b) => a - b);
+
+        const item = document.createElement("div");
+        item.className = "result-item";
+
+        const title = document.createElement("div");
+        title.className = "result-title";
+        title.textContent = `추천 ${i + 1}`;
+
+        const badges = document.createElement("div");
+        badges.className = "badges";
+
+        nums.forEach((n) => {
+          const b = document.createElement("span");
+          b.className = "badge";
+          b.textContent = n;
+          badges.appendChild(b);
+        });
+
+        item.appendChild(title);
+        item.appendChild(badges);
+        resultsEl.appendChild(item);
+      }
+    }
+  </script>
 </body>
 </html>
