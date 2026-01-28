@@ -35,7 +35,7 @@
 
     .container{
       width: 100%;
-      max-width: 680px;
+      max-width: 720px;
     }
 
     .card{
@@ -57,6 +57,16 @@
       margin: 0 0 18px 0;
       color: var(--muted);
       font-size: 14px;
+      line-height: 1.45;
+    }
+
+    .topbar{
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
     }
 
     .controls{
@@ -73,8 +83,7 @@
       color: var(--muted);
     }
 
-    input[type="number"]{
-      width: 140px;
+    input[type="number"], select{
       padding: 12px 14px;
       font-size: 16px;
       border: 1px solid var(--border);
@@ -84,7 +93,16 @@
       background: #fff;
     }
 
-    input[type="number"]:focus{
+    input[type="number"]{
+      width: 140px;
+    }
+
+    select{
+      min-width: 160px;
+      cursor: pointer;
+    }
+
+    input[type="number"]:focus, select:focus{
       border-color: rgba(37,99,235,0.7);
       box-shadow: 0 0 0 4px rgba(37,99,235,0.12);
     }
@@ -101,7 +119,7 @@
       transition: transform 0.12s ease, background 0.2s ease, box-shadow 0.2s ease;
     }
 
-    /* 2) 버튼 hover 효과 */
+    /* 버튼 hover 효과 */
     button:hover{
       background: var(--primary-hover);
       transform: translateY(-1px);
@@ -111,6 +129,12 @@
     button:active{
       transform: translateY(0px);
       box-shadow: 0 6px 14px rgba(37,99,235,0.22);
+    }
+
+    .hint{
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 13px;
     }
 
     .results{
@@ -130,9 +154,20 @@
       font-weight: 700;
       margin-bottom: 10px;
       font-size: 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
     }
 
-    /* 3) 결과 숫자를 동그라미 배지로 표시 */
+    .note{
+      font-weight: 400;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    /* 결과 숫자를 동그라미 배지로 표시 */
     .badges{
       display: flex;
       gap: 10px;
@@ -155,6 +190,18 @@
       user-select: none;
     }
 
+    .badge.fixed{
+      border-color: rgba(37,99,235,0.45);
+      box-shadow: 0 10px 20px rgba(37,99,235,0.18);
+    }
+
+    .divider{
+      height: 1px;
+      background: var(--border);
+      margin: 18px 0 12px;
+      border: 0;
+    }
+
     .footer{
       margin-top: 14px;
       font-size: 14px;
@@ -175,13 +222,6 @@
       color: var(--primary-hover);
     }
 
-    .divider{
-      height: 1px;
-      background: var(--border);
-      margin: 18px 0 12px;
-      border: 0;
-    }
-
     @media (max-width: 420px){
       h1{ font-size: 26px; }
       input[type="number"]{ width: 120px; }
@@ -192,16 +232,40 @@
 
 <body>
   <div class="container">
-    <!-- 1) 카드 박스 + 그림자 -->
     <div class="card">
       <h1>🎰 로또 번호 추천기</h1>
-      <p class="subtitle">원하는 개수만큼 랜덤 조합을 추천해드립니다. (참고용)</p>
+      <p class="subtitle">
+        원하는 개수만큼 랜덤 조합을 추천해드립니다. (참고용)<br>
+        재미 요소: <strong>띠</strong>를 선택하면 각 조합에 “오늘의 숫자”가 1개 포함됩니다.
+      </p>
+
+      <!-- ✅ 띠 선택 Drop-down (디폴트: 랜덤) -->
+      <div class="topbar">
+        <label for="zodiac">띠 선택:</label>
+        <select id="zodiac">
+          <option value="random" selected>랜덤</option>
+          <option value="rat">쥐띠</option>
+          <option value="ox">소띠</option>
+          <option value="tiger">호랑이띠</option>
+          <option value="rabbit">토끼띠</option>
+          <option value="dragon">용띠</option>
+          <option value="snake">뱀띠</option>
+          <option value="horse">말띠</option>
+          <option value="goat">양띠</option>
+          <option value="monkey">원숭이띠</option>
+          <option value="rooster">닭띠</option>
+          <option value="dog">개띠</option>
+          <option value="pig">돼지띠</option>
+        </select>
+      </div>
 
       <div class="controls">
         <label for="count">추천 개수 (최대 10개):</label>
         <input type="number" id="count" min="1" max="10" value="1" />
         <button onclick="generate()">번호 추천 받기</button>
       </div>
+
+      <div class="hint" id="hintText"></div>
 
       <div id="results" class="results" aria-live="polite"></div>
 
@@ -216,9 +280,63 @@
   </div>
 
   <script>
+    // 띠 순서(1~12): 쥐, 소, 호랑이, 토끼, 용, 뱀, 말, 양, 원숭이, 닭, 개, 돼지
+    const zodiacOrder = {
+      rat: 1,
+      ox: 2,
+      tiger: 3,
+      rabbit: 4,
+      dragon: 5,
+      snake: 6,
+      horse: 7,
+      goat: 8,
+      monkey: 9,
+      rooster: 10,
+      dog: 11,
+      pig: 12
+    };
+
+    // (오늘날짜 - 띠순서)를 1~45 범위로 보정
+    function normalizeTo1to45(x) {
+      // JS의 %는 음수 처리 때문에 보정
+      return ((x - 1) % 45 + 45) % 45 + 1;
+    }
+
+    function getFixedNumberIfAny() {
+      const z = document.getElementById("zodiac").value;
+      if (z === "random") return null;
+
+      const order = zodiacOrder[z];
+      const todayDay = new Date().getDate(); // 오늘 '일(1~31)'
+      const fixed = normalizeTo1to45(todayDay - order);
+      return { fixed, order, todayDay, zodiacKey: z };
+    }
+
+    function randomNumber1to45() {
+      return Math.floor(Math.random() * 45) + 1;
+    }
+
+    function generateOneSet(withFixed) {
+      const nums = [];
+
+      // fixed가 있다면 먼저 넣고 중복 방지
+      if (withFixed && typeof withFixed === "number") {
+        nums.push(withFixed);
+      }
+
+      while (nums.length < 6) {
+        const n = randomNumber1to45();
+        if (!nums.includes(n)) nums.push(n);
+      }
+
+      nums.sort((a, b) => a - b);
+      return nums;
+    }
+
     function generate() {
       const count = parseInt(document.getElementById("count").value, 10);
       const resultsEl = document.getElementById("results");
+      const hintEl = document.getElementById("hintText");
 
       if (isNaN(count) || count < 1 || count > 10) {
         alert("추천 개수는 1~10 사이로 입력해주세요.");
@@ -227,27 +345,41 @@
 
       resultsEl.innerHTML = "";
 
+      const fixedInfo = getFixedNumberIfAny();
+      const fixedNum = fixedInfo ? fixedInfo.fixed : null;
+
+      if (fixedInfo) {
+        hintEl.textContent =
+          `오늘(${fixedInfo.todayDay}일) - 띠 순서(${fixedInfo.order}) = ${fixedInfo.todayDay - fixedInfo.order} → 보정값 ${fixedInfo.fixed} (각 조합에 1개 포함)`;
+      } else {
+        hintEl.textContent = "랜덤 선택: 6개 숫자 모두 랜덤으로 생성됩니다.";
+      }
+
       for (let i = 0; i < count; i++) {
-        const nums = [];
-        while (nums.length < 6) {
-          const n = Math.floor(Math.random() * 45) + 1;
-          if (!nums.includes(n)) nums.push(n);
-        }
-        nums.sort((a, b) => a - b);
+        const nums = generateOneSet(fixedNum);
 
         const item = document.createElement("div");
         item.className = "result-item";
 
         const title = document.createElement("div");
         title.className = "result-title";
-        title.textContent = `추천 ${i + 1}`;
+
+        const left = document.createElement("span");
+        left.textContent = `추천 ${i + 1}`;
+
+        const right = document.createElement("span");
+        right.className = "note";
+        right.textContent = fixedInfo ? `띠 고정수: ${fixedNum}` : "";
+
+        title.appendChild(left);
+        title.appendChild(right);
 
         const badges = document.createElement("div");
         badges.className = "badges";
 
         nums.forEach((n) => {
           const b = document.createElement("span");
-          b.className = "badge";
+          b.className = "badge" + ((fixedNum !== null && n === fixedNum) ? " fixed" : "");
           b.textContent = n;
           badges.appendChild(b);
         });
@@ -257,6 +389,11 @@
         resultsEl.appendChild(item);
       }
     }
+
+    // 페이지 로드시 힌트 문구 기본 세팅(디폴트는 랜덤)
+    window.addEventListener("DOMContentLoaded", () => {
+      document.getElementById("hintText").textContent = "랜덤 선택: 6개 숫자 모두 랜덤으로 생성됩니다.";
+    });
   </script>
 </body>
 </html>
