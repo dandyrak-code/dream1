@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>로또 번호 추천기</title>
+    <style>
+        body { font-family: Arial; text-align: center; margin-top: 100px; }
+        button { padding: 15px 25px; font-size: 18px; }
+        #numbers { margin-top: 30px; font-size: 28px; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h1>🎰 로또 번호 추천기</h1>
+    <button onclick="generate()">번호 추천 받기</button>
+    <div id="numbers"></div>
+
+    <script>
+        function generate() {
+            let nums = [];
+            while (nums.length < 6) {
+                let n = Math.floor(Math.random() * 45) + 1;
+                if (!nums.includes(n)) nums.push(n);
+            }
+            nums.sort((a,b)=>a-b);
+            document.getElementById("numbers").innerText = nums.join("  ");
+        }
+    </script>
+</body>
+</html>
